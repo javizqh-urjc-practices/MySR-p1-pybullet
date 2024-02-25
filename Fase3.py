@@ -41,6 +41,8 @@ forceId = p.addUserDebugParameter("HUSKY_force", 0, 40, 5)
 lastDistance = -1
 origTime = time.time()
 
+p.changeDynamics(barrierId, 0, localInertiaDiagonal=[20/3,0.0,20/3])
+
 with open('data/Fase3.csv', 'w', newline='', encoding='utf-8') as csvfile:
     csv_writer = csv.writer(csvfile, delimiter=',')
     csv_writer.writerow(['Time', 'Position_Robot', 'Speed_Robot', 'Speed_Wheel', 'Force_Wheel'])
@@ -61,8 +63,6 @@ with open('data/Fase3.csv', 'w', newline='', encoding='utf-8') as csvfile:
             p.changeDynamics(robotId, wheel, lateralFriction=0.93)
             p.changeDynamics(robotId, wheel, spinningFriction=0.05)
             p.changeDynamics(robotId, wheel, rollingFriction=0.003)
-        
-        p.changeDynamics(barrierId, 0, localInertiaDiagonal=[20/3,0.0,20/3])
                 
         distance = p.getBasePositionAndOrientation(robotId)[0][0]
         if (distance != lastDistance):

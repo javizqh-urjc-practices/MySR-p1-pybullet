@@ -3,8 +3,6 @@ import pybullet_data
 import time
 import csv
 
-
-
 def clamp(n, min, max):
     if n < min:
         return min
@@ -43,7 +41,7 @@ class PID:
       output = 0.0
       # output = direction * self.min_output_
     elif abs(ref) > self.max_ref_:
-      output = direction * self.max_output_
+      output = direction * self.max_output_ * self.max_ref_
       # output = 0.0
     else:
       output = direction * self.min_output_ + ref * (self.max_output_ - self.min_output_)
@@ -59,11 +57,11 @@ class PID:
   
     return clamp(output / self.max_ref_, self.min_output_, self.max_output_)
 
-pidLin = PID(0,2,0,23)
-pidLin.setPid(1,0,10)
+pidLin = PID(0,2,-10,33)
+pidLin.setPid(1,0,0)
 
-pidTorq = PID(0,1,45,100)
-pidTorq.setPid(1,1,0)
+pidTorq = PID(0,2,0,200)
+pidTorq.setPid(1,0,0)
 
 
 
@@ -91,18 +89,18 @@ goalId = p.loadURDF ("models/goal.urdf", startPosition, startOrientation)
 
 
 # Only to know what is the number of the wheels
-numJoints = p.getNumJoints(barrierId)
+numJoints = p.getNumJoints(robotId)
 # print("NumJoints: " + str(numJoints))
 
 for j in range (numJoints):
-    print("%d - %s" % (p.getJointInfo(barrierId,j)[0], p.getJointInfo(barrierId,j)[1].decode("utf-8")))
+    print("%d - %s" % (p.getJointInfo(robotId,j)[0], p.getJointInfo(robotId,j)[1].decode("utf-8")))
 
 joints = [2,3,4,5]
 
 lastDistance = -1
 origTime = time.time()
-# speed = 11.5
-torque = 45.0
+
+p.changeDynamics(barrierId, 0, localInertiaDiagonal=[20/3,0.0,20/3])
 
 with open('data/Fase4.csv', 'w', newline='', encoding='utf-8') as csvfile:
     csv_writer = csv.writer(csvfile, delimiter=',')
@@ -110,24 +108,29 @@ with open('data/Fase4.csv', 'w', newline='', encoding='utf-8') as csvfile:
 
     while p.getBasePositionAndOrientation(robotId)[0][0] <= 20.0 :
         carVel = p.getBaseVelocity(robotId)[0][0]
-        speed = pidLin.getOutput(3-carVel)
+        carPitch = -p.getBasePositionAndOrientation(robotId)[1][1]
+           
+        torque  = pidTorq.getOutput(3-carVel)
+        speed   = pidLin.getOutput(3-carVel)
 
-        print(p.getBasePositionAndOrientation(robotId)[1][1])
+        speed  += speed*carPitch
+        torque += torque*carPitch
+        # if carPitch > 0:
+        # else:
+        #   speed = -10
+        #   torque = 0
 
-        torque = pidTorq.getOutput(2-carVel)
+        for wheel in joints:
+            p.changeDynamics(robotId, wheel, lateralFriction=0.93)
+            p.changeDynamics(robotId, wheel, spinningFriction=0.05)
+            p.changeDynamics(robotId, wheel, rollingFriction=0.003)
+
         p.setJointMotorControlArray(robotId,
                                     joints,
                                     p.VELOCITY_CONTROL,
                                     targetVelocities=[speed,speed,speed,speed],
                                     forces=[torque,torque,torque,torque])
-        
-        for wheel in joints:
-            p.changeDynamics(robotId, wheel, lateralFriction=0.93)
-            p.changeDynamics(robotId, wheel, spinningFriction=0.05)
-            p.changeDynamics(robotId, wheel, rollingFriction=0.003)
-        
-        p.changeDynamics(barrierId, 0, localInertiaDiagonal=[20/3,0.0,20/3])
-                
+            
         distance = p.getBasePositionAndOrientation(robotId)[0][0]
         if (distance != lastDistance):
             csv_writer.writerow([time.time() - origTime, distance, carVel,
