@@ -2,6 +2,8 @@ import pybullet as p
 import pybullet_data
 import time
 import csv
+import pandas as pd
+from scipy.spatial.transform import Rotation
 
 def clamp(n, min, max):
     if n < min:
@@ -57,11 +59,11 @@ class PID:
   
     return clamp(output / self.max_ref_, self.min_output_, self.max_output_)
 
-pidLin = PID(0,2,-10,33)
-pidLin.setPid(1,0,0)
+pidLin = PID(0,3,-20,45)
+pidLin.setPid(0.75,0.1,0.5)
 
-pidTorq = PID(0,2,0,200)
-pidTorq.setPid(1,0,0)
+pidTorq = PID(0,2,10,170)
+pidTorq.setPid(1,0.5,0.5)
 
 
 
@@ -108,17 +110,17 @@ with open('data/Fase4.csv', 'w', newline='', encoding='utf-8') as csvfile:
 
     while p.getBasePositionAndOrientation(robotId)[0][0] <= 20.0 :
         carVel = p.getBaseVelocity(robotId)[0][0]
-        carPitch = -p.getBasePositionAndOrientation(robotId)[1][1]
+
+        rot = Rotation.from_quat(p.getBasePositionAndOrientation(robotId)[1])
+        rot_euler = rot.as_euler('xyz', degrees=True)
            
         torque  = pidTorq.getOutput(3-carVel)
         speed   = pidLin.getOutput(3-carVel)
 
-        speed  += speed*carPitch
-        torque += torque*carPitch
-        # if carPitch > 0:
-        # else:
-        #   speed = -10
-        #   torque = 0
+        speed  += speed  * (-rot_euler[1]/90.0)
+
+        if rot_euler[1] < 0:
+          torque += torque * (-rot_euler[1]/5.0)
 
         for wheel in joints:
             p.changeDynamics(robotId, wheel, lateralFriction=0.93)

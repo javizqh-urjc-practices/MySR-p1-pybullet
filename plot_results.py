@@ -20,7 +20,7 @@ data = pd.read_csv('data/Fase4.csv')
 
 plt.plot(data['Position_Robot'], data['Speed_Robot'])
 plt.plot(data['Position_Robot'], data['Speed_Wheel']/10)
-plt.plot(data['Position_Robot'], data['Force_Wheel']/50)
+# plt.plot(data['Position_Robot'], data['Force_Wheel']/50)
 plt.plot(data['Position_Robot'], [2]*len(data['Speed_Wheel']))
 print(np.mean(data['Speed_Robot']))
 
