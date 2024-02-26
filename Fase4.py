@@ -66,7 +66,7 @@ pidLin2 = PID(0,60,-5,35)
 pidLin2.setPid(0.6,0.008,3)
 
 pidTorq = PID(0,90,50,400)
-pidTorq.setPid(0.6,0.5,1)
+pidTorq.setPid(0.6,1,2)
 
 
 physicsClient = p.connect (p.GUI)
@@ -118,7 +118,7 @@ with open('data/Fase4.csv', 'w', newline='', encoding='utf-8') as csvfile:
            
         torque  = pidTorq.getOutput(abs(rot_euler[1]))
         speed   = pidLin.getOutput(3-carVel)
-        speed  += pidLin2.getOutput(-rot_euler[1])
+        speed2  = pidLin2.getOutput(-rot_euler[1])
 
         for wheel in joints:
             p.changeDynamics(robotId, wheel, lateralFriction=0.93)
@@ -128,7 +128,7 @@ with open('data/Fase4.csv', 'w', newline='', encoding='utf-8') as csvfile:
         p.setJointMotorControlArray(robotId,
                                     joints,
                                     p.VELOCITY_CONTROL,
-                                    targetVelocities=[speed,speed,speed,speed],
+                                    targetVelocities=[speed,speed,speed+speed2,speed+speed2],
                                     forces=[torque,torque,torque,torque])
             
         distance = p.getBasePositionAndOrientation(robotId)[0][0]
