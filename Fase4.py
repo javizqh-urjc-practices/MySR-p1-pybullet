@@ -59,12 +59,14 @@ class PID:
   
     return clamp(output / self.max_ref_, self.min_output_, self.max_output_)
 
-pidLin = PID(0,3,-20,45)
-pidLin.setPid(0.75,0.1,0.5)
+pidLin = PID(0,3,0,40)
+pidLin.setPid(0.5,0.2,0.8)
 
-pidTorq = PID(0,2,10,170)
-pidTorq.setPid(1,0.5,0.5)
+pidLin2 = PID(0,60,-5,35)
+pidLin2.setPid(0.6,0,1)
 
+pidTorq = PID(0,90,25,700)
+pidTorq.setPid(0.5,0.1,1)
 
 
 physicsClient = p.connect (p.GUI)
@@ -114,13 +116,9 @@ with open('data/Fase4.csv', 'w', newline='', encoding='utf-8') as csvfile:
         rot = Rotation.from_quat(p.getBasePositionAndOrientation(robotId)[1])
         rot_euler = rot.as_euler('xyz', degrees=True)
            
-        torque  = pidTorq.getOutput(3-carVel)
+        torque  = pidTorq.getOutput(abs(rot_euler[1]))
         speed   = pidLin.getOutput(3-carVel)
-
-        speed  += speed  * (-rot_euler[1]/90.0)
-
-        if rot_euler[1] < 0:
-          torque += torque * (-rot_euler[1]/5.0)
+        speed  += pidLin2.getOutput(-rot_euler[1])
 
         for wheel in joints:
             p.changeDynamics(robotId, wheel, lateralFriction=0.93)
