@@ -63,10 +63,10 @@ pidLin = PID(0,3,0,40)
 pidLin.setPid(0.5,0.2,0.8)
 
 pidLin2 = PID(0,60,-5,35)
-pidLin2.setPid(0.6,0,1)
+pidLin2.setPid(0.6,0,3)
 
 pidTorq = PID(0,90,25,700)
-pidTorq.setPid(0.5,0.1,1)
+pidTorq.setPid(0.6,0.1,1)
 
 
 physicsClient = p.connect (p.GUI)
