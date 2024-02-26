@@ -59,13 +59,13 @@ class PID:
   
     return clamp(output / self.max_ref_, self.min_output_, self.max_output_)
 
-pidLin = PID(0,3,0,40)
-pidLin.setPid(0.5,0.2,0.8)
+pidLin = PID(0,3,5,47)
+pidLin.setPid(0.3,0.2,1)
 
 pidLin2 = PID(0,60,-5,35)
-pidLin2.setPid(0.6,0,3)
+pidLin2.setPid(0.6,0.008,3)
 
-pidTorq = PID(0,90,25,450)
+pidTorq = PID(0,90,50,400)
 pidTorq.setPid(0.6,0.5,1)
 
 
