@@ -62,7 +62,7 @@ class PID:
 pidLin = PID(0,3,5,47)
 pidLin.setPid(0.3,0.2,1)
 
-pidLin2 = PID(0,60,-5,35)
+pidLin2 = PID(0,50,-5,35)
 pidLin2.setPid(0.6,0.008,3)
 
 pidTorq = PID(0,90,50,400)
