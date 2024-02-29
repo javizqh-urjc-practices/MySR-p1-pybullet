@@ -63,7 +63,7 @@ pidLin = PID(0,3,5,47)
 pidLin.setPid(0.3,0.2,1)
 
 pidLin2 = PID(0,50,-5,35)
-pidLin2.setPid(0.6,0.008,3)
+pidLin2.setPid(0.62,0.02,3)
 
 pidTorq = PID(0,90,50,400)
 pidTorq.setPid(0.6,1,2)
@@ -114,8 +114,9 @@ while p.getBasePositionAndOrientation(robotId)[0][0] <= 20.0 :
 	rot_euler = rot.as_euler('xyz', degrees=True)
 	   
 	torque  = pidTorq.getOutput(abs(rot_euler[1]))
-	speed   = pidLin.getOutput(3-carVel)
+	speed = pidLin.getOutput(3-carVel)	
 	speed2  = pidLin2.getOutput(-rot_euler[1])
+	
 
 	for wheel in joints:
 	    p.changeDynamics(robotId, wheel, lateralFriction=0.93)
