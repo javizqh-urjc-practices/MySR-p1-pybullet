@@ -105,36 +105,38 @@ lastDistance = -1
 origTime = time.time()
 
 p.changeDynamics(barrierId, 0, localInertiaDiagonal=[20/3,0.0,20/3])
+csv_values = []
+
+while p.getBasePositionAndOrientation(robotId)[0][0] <= 20.0 :
+	carVel = p.getBaseVelocity(robotId)[0][0]
+
+	rot = Rotation.from_quat(p.getBasePositionAndOrientation(robotId)[1])
+	rot_euler = rot.as_euler('xyz', degrees=True)
+	   
+	torque  = pidTorq.getOutput(abs(rot_euler[1]))
+	speed   = pidLin.getOutput(3-carVel)
+	speed2  = pidLin2.getOutput(-rot_euler[1])
+
+	for wheel in joints:
+	    p.changeDynamics(robotId, wheel, lateralFriction=0.93)
+	    p.changeDynamics(robotId, wheel, spinningFriction=0.05)
+	    p.changeDynamics(robotId, wheel, rollingFriction=0.003)
+
+	p.setJointMotorControlArray(robotId,
+		                    joints,
+		                    p.VELOCITY_CONTROL,
+		                    targetVelocities=[speed,speed,speed+speed2,speed+speed2],
+		                    forces=[torque,torque,torque,torque])
+	    
+	distance = p.getBasePositionAndOrientation(robotId)[0][0]
+	if (distance != lastDistance):
+		csv_values.append([time.time() - origTime, distance, carVel, speed, torque])
+		lastDistance = distance
+
+p.disconnect()
 
 with open('data/Fase4.csv', 'w', newline='', encoding='utf-8') as csvfile:
     csv_writer = csv.writer(csvfile, delimiter=',')
     csv_writer.writerow(['Time', 'Position_Robot', 'Speed_Robot', 'Speed_Wheel', 'Force_Wheel'])
-
-    while p.getBasePositionAndOrientation(robotId)[0][0] <= 20.0 :
-        carVel = p.getBaseVelocity(robotId)[0][0]
-
-        rot = Rotation.from_quat(p.getBasePositionAndOrientation(robotId)[1])
-        rot_euler = rot.as_euler('xyz', degrees=True)
-           
-        torque  = pidTorq.getOutput(abs(rot_euler[1]))
-        speed   = pidLin.getOutput(3-carVel)
-        speed2  = pidLin2.getOutput(-rot_euler[1])
-
-        for wheel in joints:
-            p.changeDynamics(robotId, wheel, lateralFriction=0.93)
-            p.changeDynamics(robotId, wheel, spinningFriction=0.05)
-            p.changeDynamics(robotId, wheel, rollingFriction=0.003)
-
-        p.setJointMotorControlArray(robotId,
-                                    joints,
-                                    p.VELOCITY_CONTROL,
-                                    targetVelocities=[speed,speed,speed+speed2,speed+speed2],
-                                    forces=[torque,torque,torque,torque])
-            
-        distance = p.getBasePositionAndOrientation(robotId)[0][0]
-        if (distance != lastDistance):
-            csv_writer.writerow([time.time() - origTime, distance, carVel,
-                                 speed, torque])
-            lastDistance = distance
-
-p.disconnect()
+    for i in csv_values:
+    	csv_writer.writerow([i[0],i[1],i[2],i[3],i[4]])
