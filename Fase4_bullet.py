@@ -72,48 +72,48 @@ pidTorq = PID(0,90,50,400)
 pidTorq.setPid(0.6,1,2)
 
 
-physicsClient = p.connect (p.GUI)
+physics_client = p.connect (p.GUI)
 p.setAdditionalSearchPath (pybullet_data.getDataPath())
 p.setRealTimeSimulation(1)
 p.setGravity (0, 0, -9.81)
 
-planeId = p.loadURDF ("plane.urdf")
+plane_id = p.loadURDF ("plane.urdf")
 
 euler_angles = [0, 0, 0]
-startOrientation = p.getQuaternionFromEuler(euler_angles)
-startPosition = [0, 0, 0.1]
+start_orientation = p.getQuaternionFromEuler(euler_angles)
+start_position = [0, 0, 0.1]
 
-robotId = p.loadURDF ("husky/husky.urdf", startPosition, startOrientation)
+robot_id = p.loadURDF ("husky/husky.urdf", start_position, start_orientation)
 
-startPosition = [10, 0, 0.1]
-slopeId = p.loadURDF ("models/rampa.urdf", startPosition, startOrientation)
+start_position = [10, 0, 0.1]
+slope_id = p.loadURDF ("models/rampa.urdf", start_position, start_orientation)
 
-startPosition = [17, 1.5, 0.1]
-barrierId = p.loadURDF ("models/barrera.urdf", startPosition, startOrientation)
+start_position = [17, 1.5, 0.1]
+barrier_id = p.loadURDF ("models/barrera.urdf", start_position, start_orientation)
 
-startPosition = [20, 0, 0.1]
-goalId = p.loadURDF ("models/goal.urdf", startPosition, startOrientation)
+start_position = [20, 0, 0.1]
+goal_id = p.loadURDF ("models/goal.urdf", start_position, start_orientation)
 
 
 # Only to know what is the number of the wheels
-numJoints = p.getNumJoints(robotId)
+numJoints = p.getNumJoints(robot_id)
 # print("NumJoints: " + str(numJoints))
 
 for j in range (numJoints):
-    print("%d - %s" % (p.getJointInfo(robotId,j)[0], p.getJointInfo(robotId,j)[1].decode("utf-8")))
+    print("%d - %s" % (p.getJointInfo(robot_id,j)[0], p.getJointInfo(robot_id,j)[1].decode("utf-8")))
 
 joints = [2,3,4,5]
 
-lastDistance = -1
-origTime = time.time()
+last_distance = -1
+start_time = time.time()
 
-p.changeDynamics(barrierId, 0, localInertiaDiagonal=[20/3,0.0,20/3])
+p.changeDynamics(barrier_id, 0, localInertiaDiagonal=[20/3,0.0,20/3])
 csv_values = []
 
-while p.getBasePositionAndOrientation(robotId)[0][0] <= 20.0 :
-	carVel = p.getBaseVelocity(robotId)[0][0]
+while p.getBasePositionAndOrientation(robot_id)[0][0] <= 20.0 :
+	carVel = p.getBaseVelocity(robot_id)[0][0]
 
-	rot = Rotation.from_quat(p.getBasePositionAndOrientation(robotId)[1])
+	rot = Rotation.from_quat(p.getBasePositionAndOrientation(robot_id)[1])
 	rot_euler = rot.as_euler('xyz', degrees=True)
 	   
 	torque  = pidTorq.getOutput(abs(rot_euler[1]))
@@ -121,23 +121,23 @@ while p.getBasePositionAndOrientation(robotId)[0][0] <= 20.0 :
 	speed2  = pidLin2.getOutput(-rot_euler[1])
 
   # In order to be able to see the robot while moving 
-	p.resetDebugVisualizerCamera( cameraDistance=6, cameraYaw=30, cameraPitch=-52, cameraTargetPosition=p.getBasePositionAndOrientation(robotId)[0])
+	p.resetDebugVisualizerCamera( cameraDistance=6, cameraYaw=30, cameraPitch=-52, cameraTargetPosition=p.getBasePositionAndOrientation(robot_id)[0])
 
 	for wheel in joints:
-	    p.changeDynamics(robotId, wheel, lateralFriction=0.93)
-	    p.changeDynamics(robotId, wheel, spinningFriction=0.05)
-	    p.changeDynamics(robotId, wheel, rollingFriction=0.003)
+	    p.changeDynamics(robot_id, wheel, lateralFriction=0.93)
+	    p.changeDynamics(robot_id, wheel, spinningFriction=0.05)
+	    p.changeDynamics(robot_id, wheel, rollingFriction=0.003)
 
-	p.setJointMotorControlArray(robotId,
+	p.setJointMotorControlArray(robot_id,
 		                    joints,
 		                    p.VELOCITY_CONTROL,
-		                    targetVelocities=[speed,speed,speed+speed2,speed+speed2],
-		                    forces=[torque,torque,torque,torque])
+		                    targetVelocities=[speed, speed, speed + speed2, speed + speed2],
+		                    forces=[torque, torque, torque, torque])
 	    
-	distance = p.getBasePositionAndOrientation(robotId)[0][0]
-	if (distance != lastDistance):
-		csv_values.append([time.time() - origTime, distance, carVel, speed, torque])
-		lastDistance = distance
+	distance = p.getBasePositionAndOrientation(robot_id)[0][0]
+	if (distance != last_distance):
+		csv_values.append([time.time() - start_time, distance, carVel, speed, torque])
+		last_distance = distance
 
 p.disconnect()
 
