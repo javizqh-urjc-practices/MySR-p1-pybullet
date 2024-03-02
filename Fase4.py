@@ -116,7 +116,8 @@ while p.getBasePositionAndOrientation(robotId)[0][0] <= 20.0 :
 	torque  = pidTorq.getOutput(abs(rot_euler[1]))
 	speed = pidLin.getOutput(3-carVel)	
 	speed2  = pidLin2.getOutput(-rot_euler[1])
-	
+
+	p.resetDebugVisualizerCamera( cameraDistance=6, cameraYaw=30, cameraPitch=-52, cameraTargetPosition=p.getBasePositionAndOrientation(robotId)[0])
 
 	for wheel in joints:
 	    p.changeDynamics(robotId, wheel, lateralFriction=0.93)
