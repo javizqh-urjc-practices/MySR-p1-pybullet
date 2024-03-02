@@ -59,12 +59,15 @@ class PID:
   
     return clamp(output / self.max_ref_, self.min_output_, self.max_output_)
 
+# For speed based on the robot speed
 pidLin = PID(0,3,5,47)
 pidLin.setPid(0.3,0.2,1)
 
+# For speed based on the inclination
 pidLin2 = PID(0,50,-5,35)
 pidLin2.setPid(0.62,0.02,3)
 
+# For torque based on the inclination
 pidTorq = PID(0,90,50,400)
 pidTorq.setPid(0.6,1,2)
 
@@ -117,6 +120,7 @@ while p.getBasePositionAndOrientation(robotId)[0][0] <= 20.0 :
 	speed = pidLin.getOutput(3-carVel)	
 	speed2  = pidLin2.getOutput(-rot_euler[1])
 
+  # In order to be able to see the robot while moving 
 	p.resetDebugVisualizerCamera( cameraDistance=6, cameraYaw=30, cameraPitch=-52, cameraTargetPosition=p.getBasePositionAndOrientation(robotId)[0])
 
 	for wheel in joints:
