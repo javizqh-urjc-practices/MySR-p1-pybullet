@@ -38,6 +38,7 @@ joints = [2,3,4,5]
 lastDistance = -1
 origTime = time.time()
 
+p.changeDynamics(barrierId, 0, localInertiaDiagonal=[20/3,0.0,20/3])
 csv_values = []
 
 while p.getBasePositionAndOrientation(robotId)[0][0] <= 20.0 :
@@ -50,7 +51,7 @@ while p.getBasePositionAndOrientation(robotId)[0][0] <= 20.0 :
                                 targetVelocities=[speed,speed,speed,speed],
                                 forces=[torque,torque,torque,torque])
     
-    p.changeDynamics(barrierId, 0, localInertiaDiagonal=[20/3,0.0,20/3])
+    p.resetDebugVisualizerCamera( cameraDistance=6, cameraYaw=30, cameraPitch=-52, cameraTargetPosition=p.getBasePositionAndOrientation(robotId)[0])
     
     for wheel in joints:
         p.changeDynamics(robotId, wheel, lateralFriction=0.93)
